@@ -423,10 +423,10 @@ function DashboardPage({ skills, jobs, insights, userName, profession }) {
   return (
     <PageWrap>
       <div>
-        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: COLORS.text }}>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: "white" }}>
           {greeting + ", " + (userName || "there") + "! 👋"}
         </h1>
-        <p style={{ color: COLORS.textLight, margin: 0, fontSize: "14px" }}>
+        <p style={{ color: "rgba(255,255,255,0.6)", margin: 0, fontSize: "14px" }}>
           {profession ? "Here is your " + profession.label + " market intelligence" : "Here is the latest job market intelligence"}
         </p>
       </div>
@@ -441,32 +441,32 @@ function DashboardPage({ skills, jobs, insights, userName, profession }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "16px" }}>
         <GCard>
-          <h2 style={{ fontSize: "15px", fontWeight: "600", margin: "0 0 20px 0", color: COLORS.text }}>
-            Top Skills in Demand
-          </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(124,111,205,0.1)" />
-              <XAxis dataKey="name" tick={{ fontSize: 11, fill: COLORS.textLight }} />
-              <YAxis tick={{ fontSize: 11, fill: COLORS.textLight }} />
-              <Tooltip contentStyle={{ borderRadius: "10px", border: "1px solid rgba(124,111,205,0.2)", boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }} />
-              <Bar dataKey="frequency" fill="#7C6FCD" radius={[6, 6, 0, 0]} name="Frequency" />
-            </BarChart>
-          </ResponsiveContainer>
-        </GCard>
+  <h2 style={{ fontSize: "15px", fontWeight: "600", margin: "0 0 20px 0", color: "black" }}>
+    Top Skills in Demand
+  </h2>
+  <ResponsiveContainer width="100%" height={250}>
+    <BarChart data={chartData}>
+      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+      <XAxis dataKey="name" tick={{ fontSize: 11, fill: "rgba(30,20,60,0.95)" }} />
+      <YAxis tick={{ fontSize: 11, fill: "rgba(30,20,60,0.95)" }} />
+      <Tooltip contentStyle={{ borderRadius: "10px", background: "rgba(30,20,60,0.95)", border: "1px solid rgba(124,111,205,0.4)", color: "white" }} />
+      <Bar dataKey="frequency" fill="#7C6FCD" radius={[6, 6, 0, 0]} name="Frequency" />
+    </BarChart>
+  </ResponsiveContainer>
+</GCard>
 
-        <GCard>
-          <h2 style={{ fontSize: "15px", fontWeight: "600", margin: "0 0 20px 0", color: COLORS.text }}>
-            Skill Radar
-          </h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <RadarChart data={radarData}>
-              <PolarGrid stroke="rgba(124,111,205,0.2)" />
-              <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: COLORS.textLight }} />
-              <Radar name="Demand" dataKey="value" stroke="#7C6FCD" fill="#7C6FCD" fillOpacity={0.3} />
-            </RadarChart>
-          </ResponsiveContainer>
-        </GCard>
+<GCard>
+  <h2 style={{ fontSize: "15px", fontWeight: "600", margin: "0 0 20px 0", color: "black" }}>
+    Skill Radar
+  </h2>
+  <ResponsiveContainer width="100%" height={220}>
+    <RadarChart data={radarData}>
+      <PolarGrid stroke="rgba(3, 3, 3, 0.15)" />
+      <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: "rgba(30,20,60,0.95)" }} />
+      <Radar name="Demand" dataKey="value" stroke="#7C6FCD" fill="#7C6FCD" fillOpacity={0.3} />
+    </RadarChart>
+  </ResponsiveContainer>
+</GCard>
       </div>
 
       {insights && (
@@ -582,23 +582,27 @@ function ResumePage({ userName, profession }) {
   const fileRef = useRef(null);
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setFileName(file.name);
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('resume', file);
-      const res = await axios.post(API + "/upload/resume", formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setResumeText(res.data.text);
-    } catch (err) {
-      alert('Failed to parse file. Please try copy-pasting the text instead.');
-    } finally {
-      setUploading(false);
-    }
-  };
+  const file = e.target.files[0];
+  if (!file) return;
+  setFileName(file.name);
+  setUploading(true);
+  try {
+    const formData = new FormData();
+    formData.append('resume', file);
+    const res = await axios.post(API + "/upload/resume", formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    setResumeText(res.data.text);
+  } catch (err) {
+    const msg = err.response && err.response.data && err.response.data.error
+      ? err.response.data.error
+      : 'Failed to parse file.';
+    setFileName('');
+    alert(msg + ' Please paste your resume text in the box below.');
+  } finally {
+    setUploading(false);
+  }
+};
 
   const analyze = async () => {
     if (!resumeText.trim()) return;
@@ -782,6 +786,168 @@ function ResumePage({ userName, profession }) {
             </div>
           </GCard>
         </div>
+      )}
+    </PageWrap>
+  );
+}
+// ── Learn Page ─────────────────────────────────
+function LearnPage({ skills }) {
+  const topSkills = skills.slice(0, 12);
+  return (
+    <PageWrap>
+      <div>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: COLORS.text }}>
+          Learning Resources
+        </h1>
+        <p style={{ color: COLORS.textLight, margin: 0, fontSize: "14px" }}>
+          Curated resources for the most in-demand skills in your field
+        </p>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "16px" }}>
+        {topSkills.map((skill, i) => {
+          const resUrl = LEARNING_RESOURCES[skill.skill_name]
+            ? LEARNING_RESOURCES[skill.skill_name]
+            : "https://www.google.com/search?q=learn+" + skill.skill_name + "+tutorial";
+          const hasResource = !!LEARNING_RESOURCES[skill.skill_name];
+          return (
+            <div key={i} className="hover-lift" style={{ ...glassCard, padding: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                <div style={{ fontSize: "15px", fontWeight: "600", color: COLORS.text }}>{skill.skill_name}</div>
+                <span style={{ background: "rgba(124,111,205,0.1)", color: COLORS.primary, padding: "3px 8px", borderRadius: "20px", fontSize: "11px" }}>
+                  {"#" + (i + 1)}
+                </span>
+              </div>
+              <div style={{ fontSize: "12px", color: COLORS.textLight, marginBottom: "16px" }}>
+                {"Appears in " + skill.frequency + " job listings"}
+              </div>
+              <div style={{ marginBottom: "16px", height: "4px", background: "rgba(124,111,205,0.1)", borderRadius: "2px" }}>
+                <div style={{
+                  height: "100%", borderRadius: "2px",
+                  background: "linear-gradient(90deg, #7C6FCD, #a78bfa)",
+                  width: Math.min(100, skill.frequency * 10) + "%"
+                }} />
+              </div>
+              <a href={resUrl} target="_blank" rel="noreferrer"
+                style={{
+                  display: "inline-block", padding: "8px 18px",
+                  background: hasResource ? "linear-gradient(135deg, #7C6FCD, #a78bfa)" : "rgba(124,111,205,0.08)",
+                  color: hasResource ? "white" : COLORS.primary,
+                  borderRadius: "8px", fontSize: "13px",
+                  textDecoration: "none", fontWeight: "500",
+                  border: hasResource ? "none" : "1px solid rgba(124,111,205,0.2)",
+                  boxShadow: hasResource ? "0 4px 12px rgba(124,111,205,0.3)" : "none"
+                }}
+              >
+                {hasResource ? "Start Learning" : "Find Resources"}
+              </a>
+            </div>
+          );
+        })}
+      </div>
+    </PageWrap>
+  );
+}
+
+// ── Interview Prep Page ────────────────────────
+function InterviewPage({ skills, userName }) {
+  const [selectedSkill, setSelectedSkill] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const generateQuestions = async (skill) => {
+    setSelectedSkill(skill);
+    setLoading(true);
+    setQuestions([]);
+    try {
+      const res = await axios.post(API + "/resume/interview", { skill: skill.skill_name });
+      setQuestions(res.data.questions || []);
+    } catch (err) {
+      setQuestions([
+        "What is " + skill.skill_name + " and how have you used it?",
+        "Describe a challenging problem you solved using " + skill.skill_name,
+        "What are the best practices for " + skill.skill_name + "?",
+        "How does " + skill.skill_name + " compare to alternatives?",
+        "Walk me through a project where you used " + skill.skill_name,
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <PageWrap>
+      <div>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: COLORS.text }}>
+          Interview Prep
+        </h1>
+        <p style={{ color: COLORS.textLight, margin: 0, fontSize: "14px" }}>
+          AI-generated interview questions for top market skills
+        </p>
+      </div>
+
+      <GCard>
+        <div style={{ fontSize: "14px", fontWeight: "500", color: COLORS.text, marginBottom: "14px" }}>
+          Select a skill to generate interview questions:
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          {skills.slice(0, 12).map((skill, i) => (
+            <button key={i}
+              onClick={() => generateQuestions(skill)}
+              style={{
+                padding: "8px 16px", borderRadius: "20px", fontSize: "13px",
+                fontWeight: "500", cursor: "pointer", border: "none",
+                background: selectedSkill && selectedSkill.skill_name === skill.skill_name
+                  ? "linear-gradient(135deg, #7C6FCD, #a78bfa)"
+                  : "rgba(124,111,205,0.1)",
+                color: selectedSkill && selectedSkill.skill_name === skill.skill_name
+                  ? "white" : COLORS.primary,
+                transition: "all 0.2s ease",
+                boxShadow: selectedSkill && selectedSkill.skill_name === skill.skill_name
+                  ? "0 4px 12px rgba(124,111,205,0.3)" : "none"
+              }}
+            >
+              {skill.skill_name}
+            </button>
+          ))}
+        </div>
+      </GCard>
+
+      {loading && (
+        <GCard style={{ textAlign: "center", padding: "40px" }}>
+          <div style={{ fontSize: "32px", marginBottom: "12px", animation: "pulse 1s ease infinite" }}>🤔</div>
+          <div style={{ color: COLORS.textLight, fontSize: "14px" }}>
+            Generating interview questions...
+          </div>
+        </GCard>
+      )}
+
+      {questions.length > 0 && selectedSkill && (
+        <GCard>
+          <h3 style={{ fontSize: "15px", fontWeight: "600", color: COLORS.text, margin: "0 0 20px 0" }}>
+            {"Interview Questions: " + selectedSkill.skill_name}
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {questions.map((q, i) => (
+              <div key={i} className="fade-in" style={{
+                display: "flex", gap: "14px", alignItems: "flex-start",
+                padding: "14px", borderRadius: "10px",
+                background: "rgba(124,111,205,0.05)",
+                border: "1px solid rgba(124,111,205,0.1)",
+                animationDelay: i * 0.1 + "s"
+              }}>
+                <div style={{
+                  width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0,
+                  background: "linear-gradient(135deg, #7C6FCD, #a78bfa)",
+                  color: "white", display: "flex", alignItems: "center",
+                  justifyContent: "center", fontSize: "13px", fontWeight: "700"
+                }}>
+                  {i + 1}
+                </div>
+                <div style={{ fontSize: "14px", color: COLORS.text, lineHeight: "1.6" }}>{q}</div>
+              </div>
+            ))}
+          </div>
+        </GCard>
       )}
     </PageWrap>
   );
@@ -988,3 +1154,6 @@ export default function App() {
     </div>
   );
 }
+  
+
+

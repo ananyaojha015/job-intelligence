@@ -1,34 +1,43 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const pdfParse = require('pdf-parse');
 
-const upload = multer({ 
+const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
-// POST /api/upload/resume
 router.post('/resume', upload.single('resume'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    let text = '';
     const mimetype = req.file.mimetype;
+    let text = '';
 
     if (mimetype === 'application/pdf') {
-      const data = await pdfParse(req.file.buffer);
-      text = data.text;
-    } else if (
-      mimetype === 'text/plain' ||
-      mimetype === 'application/msword' ||
-      mimetype.includes('wordprocessingml')
-    ) {
-      text = req.file.buffer.toString('utf-8');
+      try {
+        const pdfParse = require('pdf-parse');
+        const data = await pdfParse(req.file.buffer);
+        text = data.text;
+      } catch (pdfErr) {
+        // PDF parsing failed — return error with helpful message
+        return res.status(400).json({
+          error: 'Could not parse this PDF. Please copy-paste your resume text instead.',
+          fallback: true
+        });
+      }
     } else {
-      return res.status(400).json({ error: 'Please upload a PDF or TXT file' });
+      // For txt files
+      text = req.file.buffer.toString('utf-8');
+    }
+
+    if (!text || text.trim().length < 50) {
+      return res.status(400).json({
+        error: 'Could not extract enough text from this file. Please copy-paste your resume text instead.',
+        fallback: true
+      });
     }
 
     res.json({ text: text.trim() });

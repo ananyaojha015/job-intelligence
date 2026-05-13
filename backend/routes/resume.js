@@ -57,9 +57,10 @@ async function enhanceWithAI(resumeText, deterministicSkills) {
       messages: [
         {
           role: "user",
-          content: "Look at this resume and find ONLY additional technical skills not in this list: " + 
-            JSON.stringify(deterministicSkills) + 
-            "\n\nReturn ONLY a JSON array of NEW technical skills found. If none, return [].\n\nResume:\n" + 
+          content:
+            "Look at this resume and find ONLY additional technical skills not in this list: " +
+            JSON.stringify(deterministicSkills) +
+            "\n\nReturn ONLY a JSON array of NEW technical skills found. If none, return [].\n\nResume:\n" +
             resumeText
         }
       ],
@@ -70,12 +71,13 @@ async function enhanceWithAI(resumeText, deterministicSkills) {
     const text = completion.choices[0].message.content.trim();
     const clean = text.replace(/[`]{3}(json)?/g, '').trim();
     const aiSkills = JSON.parse(clean);
-    
-    // Merge and deduplicate
-    const combined = [...new Set([...deterministicSkills, ...aiSkills.map(s => s.toLowerCase())])];
+
+    const combined = [
+      ...new Set([...deterministicSkills, ...aiSkills.map(s => s.toLowerCase())])
+    ];
+
     return combined;
   } catch (e) {
-    // If AI fails, return deterministic results
     console.log('AI enhancement failed, using deterministic only');
     return deterministicSkills;
   }
@@ -87,17 +89,12 @@ router.post('/analyze', async (req, res) => {
     const { resumeText } = req.body;
     if (!resumeText) return res.status(400).json({ error: 'Resume text required' });
 
-    // Step 1 — Deterministic extraction first
     console.log('Running deterministic skill extraction...');
     const deterministicSkills = extractSkillsDeterministic(resumeText);
-    console.log('Deterministic skills:', deterministicSkills);
 
-    // Step 2 — AI enhancement
     console.log('Enhancing with AI...');
     const userSkills = await enhanceWithAI(resumeText, deterministicSkills);
-    console.log('Final skills:', userSkills);
 
-    // Step 3 — Get market technical skills only
     const marketSkills = await db()
       .collection('skills')
       .find({})
@@ -106,22 +103,35 @@ router.post('/analyze', async (req, res) => {
 
     const userSkillSet = new Set(userSkills.map(s => s.toLowerCase()));
 
-    const strongSkills = marketSkills.filter(s => userSkillSet.has(s.skill_name.toLowerCase()));
-    const missingSkills = marketSkills.filter(s => !userSkillSet.has(s.skill_name.toLowerCase()));
+    const strongSkills = marketSkills.filter(s =>
+      userSkillSet.has(s.skill_name.toLowerCase())
+    );
 
-    // Step 4 — Weighted match score
+    const missingSkills = marketSkills.filter(s =>
+      !userSkillSet.has(s.skill_name.toLowerCase())
+    );
+
     const insights = await db()
       .collection('insights')
       .findOne({}, { sort: { generated_at: -1 } });
 
     const demandMap = {};
     if (insights?.demand_scores) {
-      insights.demand_scores.forEach(s => { demandMap[s.skill] = s.demand_score; });
+      insights.demand_scores.forEach(s => {
+        demandMap[s.skill] = s.demand_score;
+      });
     }
 
-    // Weighted score — skills with higher demand count more
-    const totalDemand = marketSkills.reduce((sum, s) => sum + (demandMap[s.skill_name] || 1), 0);
-    const matchedDemand = strongSkills.reduce((sum, s) => sum + (demandMap[s.skill_name] || 1), 0);
+    const totalDemand = marketSkills.reduce(
+      (sum, s) => sum + (demandMap[s.skill_name] || 1),
+      0
+    );
+
+    const matchedDemand = strongSkills.reduce(
+      (sum, s) => sum + (demandMap[s.skill_name] || 1),
+      0
+    );
+
     const weightedScore = Math.round((matchedDemand / totalDemand) * 100);
 
     const recommendations = missingSkills
@@ -148,21 +158,29 @@ router.post('/analyze', async (req, res) => {
   }
 });
 
+// Interview route (fixed from merge conflict)
 router.post('/interview', async (req, res) => {
   try {
     const { skill } = req.body;
+
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [{
         role: "user",
-        content: "Generate 5 technical interview questions for " + skill + ". Return only a JSON array of strings. No explanation, no markdown."
+        content:
+          "Generate 5 technical interview questions for " +
+          skill +
+          ". Return only a JSON array of strings. No explanation, no markdown."
       }],
       temperature: 0.7,
       max_tokens: 500,
     });
+
     const text = completion.choices[0].message.content.trim();
     const clean = text.replace(/[`]{3}(json)?/g, '').trim();
+
     res.json({ questions: JSON.parse(clean) });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

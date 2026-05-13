@@ -17,8 +17,12 @@
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "groq-sdk": "^1.2.0",
+<<<<<<< HEAD
     "mongoose": "^9.6.2",
     "multer": "^2.1.1",
     "pdf-parse": "^2.4.5"
+=======
+    "mongoose": "^9.6.2"
+>>>>>>> 4e52e656246be521ca24a8c8ec2da45bc060d68f
   }
 }

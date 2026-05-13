@@ -83,23 +83,7 @@ const PROFESSION_SKILLS = {
   ],
 };
 
-// GET /api/profession/:id/skills — get relevant skills for a profession
-router.get('/:id/skills', async (req, res) => {
-  try {
-    const professionId = req.params.id;
-    const relevantSkills = PROFESSION_SKILLS[professionId] || PROFESSION_SKILLS["software-development"];
 
-    const skills = await db()
-      .collection('skills')
-      .find({ skill_name: { $in: relevantSkills } })
-      .sort({ frequency: -1 })
-      .toArray();
-
-    res.json({ profession: professionId, skills, relevant_skills: relevantSkills });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // GET /api/profession/:id/jobs — get relevant jobs for a profession
 router.get('/:id/skills', async (req, res) => {
@@ -130,6 +114,32 @@ router.get('/:id/skills', async (req, res) => {
     const allSkills = [...dbSkills, ...missingSkills];
 
     res.json({ profession: professionId, skills: allSkills, relevant_skills: relevantSkills });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+router.get('/:id/jobs', async (req, res) => {
+  try {
+    const professionId = req.params.id;
+    const relevantSkills = PROFESSION_SKILLS[professionId] || [];
+
+    // Get all jobs — filter by skills if possible, otherwise return all
+    let jobs = await db()
+      .collection('jobs')
+      .find({
+        extracted_skills: { $in: relevantSkills }
+      })
+      .toArray();
+
+    // If no jobs match, return all jobs as fallback
+    if (jobs.length === 0) {
+      jobs = await db()
+        .collection('jobs')
+        .find({})
+        .toArray();
+    }
+
+    res.json(jobs);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -278,7 +278,7 @@ function SplashScreen({ onComplete }) {
 }
 
 // ── Sidebar ────────────────────────────────────
-function Sidebar({ page, setPage, userName, profession, isOpen }) {
+function Sidebar({ page, setPage, userName, profession, isOpen, setSidebarOpen }) {
   const items = [
     { id: "dashboard", icon: "⊞", label: "Dashboard" },
     { id: "jobs", icon: "💼", label: "Jobs" },
@@ -335,6 +335,10 @@ function Sidebar({ page, setPage, userName, profession, isOpen }) {
           className="nav-item"
           onClick={() => {
   setPage(item.id);
+
+  if (window.innerWidth <= 768) {
+    setSidebarOpen(false);
+  }
 }}
           style={{
             display: "flex", alignItems: "center", gap: "12px",
@@ -1416,13 +1420,14 @@ export default function App() {
                 : (sidebarOpen ? "translateX(0)" : "translateX(-230px)")
           }}
         >
-          <Sidebar
-            page={page}
-            setPage={handleNavClick}
-            userName={userName}
-            profession={profession}
-            isOpen={true}
-          />
+         <Sidebar
+  page={page}
+  setPage={handleNavClick}
+  userName={userName}
+  profession={profession}
+  isOpen={true}
+  setSidebarOpen={setSidebarOpen}
+/>
         </div>
 
         {/* Main content */}

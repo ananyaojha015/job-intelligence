@@ -1053,38 +1053,73 @@ export default function App() {
   const [jobs, setJobs] = useState([]);
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Responsive mobile detection
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
+
+  // Handle resize
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+
+      // auto adjust sidebar based on screen
+      if (mobile) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (!onboarded) return;
+
     const fetchData = async () => {
       try {
         const profId = profession ? profession.id : "software-development";
+
         const [skillsRes, jobsRes, insightsRes] = await Promise.all([
           axios.get(API + "/profession/" + profId + "/skills"),
           axios.get(API + "/profession/" + profId + "/jobs"),
           axios.get(API + "/insights"),
         ]);
+
         setSkills(skillsRes.data.skills || skillsRes.data);
         setJobs(jobsRes.data);
         setInsights(insightsRes.data);
+
       } catch (err) {
         console.error("Error:", err);
-        // fallback to all skills
+
+        // fallback
         try {
           const [skillsRes, jobsRes, insightsRes] = await Promise.all([
             axios.get(API + "/skills/top"),
             axios.get(API + "/jobs"),
             axios.get(API + "/insights"),
           ]);
+
           setSkills(skillsRes.data);
           setJobs(jobsRes.data);
           setInsights(insightsRes.data);
-        } catch(e) { console.error(e); }
+
+        } catch (e) {
+          console.error(e);
+        }
+
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [onboarded]);
 
@@ -1094,10 +1129,35 @@ export default function App() {
     setOnboarded(true);
   };
 
+  // Navigation handling
+  const handleNavClick = (id) => {
+    setPage(id);
+
+    // auto close only on mobile
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
   if (!onboarded) {
     return (
       <div>
-        <style>{`* { margin: 0; padding: 0; box-sizing: border-box; } body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; } ::placeholder { color: rgba(255,255,255,0.5); }`}</style>
+        <style>{`
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          }
+
+          ::placeholder {
+            color: rgba(255,255,255,0.5);
+          }
+        `}</style>
+
         <SplashScreen onComplete={handleOnboardComplete} />
       </div>
     );
@@ -1107,112 +1167,316 @@ export default function App() {
     return (
       <div style={{ position: "fixed", inset: 0 }}>
         <AnimatedBg />
-        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", gap: "16px" }}>
-          <div className="shimmer-text" style={{ fontSize: "36px", fontWeight: "800" }}>JobIQ</div>
-          <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px" }}>
+
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+            gap: "16px"
+          }}
+        >
+          <div
+            className="shimmer-text"
+            style={{
+              fontSize: "36px",
+              fontWeight: "800"
+            }}
+          >
+            JobIQ
+          </div>
+
+          <div
+            style={{
+              color: "rgba(255,255,255,0.6)",
+              fontSize: "14px"
+            }}
+          >
             {"Loading your " + (profession ? profession.label : "") + " intelligence..."}
           </div>
         </div>
-        <style>{`@keyframes shimmer { from { background-position: -200% center; } to { background-position: 200% center; } } .shimmer-text { background: linear-gradient(90deg, #fff 0%, #c4b5fd 50%, #fff 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; }`}</style>
+
+        <style>{`
+          @keyframes shimmer {
+            from { background-position: -200% center; }
+            to { background-position: 200% center; }
+          }
+
+          .shimmer-text {
+            background: linear-gradient(90deg, #fff 0%, #c4b5fd 50%, #fff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s linear infinite;
+          }
+        `}</style>
       </div>
     );
   }
 
-  
-
-  const handleNavClick = (id) => {
-    if (page === id) {
-      setSidebarOpen(prev => !prev);
-    } else {
-      setPage(id);
-      setSidebarOpen(false);
-    }
-  };
-
   return (
-    <div style={{ display: "flex", minHeight: "100vh", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+    <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      }}
+    >
       <AnimatedBg />
+
       <style>{`
         * { box-sizing: border-box; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        @keyframes shimmer { from { background-position: -200% center; } to { background-position: 200% center; } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes blob1 { from { transform: translate(0,0) scale(1); } to { transform: translate(100px,50px) scale(1.2); } }
-        @keyframes blob2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-80px,-60px) scale(1.1); } }
-        @keyframes blob3 { from { transform: translate(0,0) scale(1); } to { transform: translate(60px,-80px) scale(0.9); } }
-        .fade-in-up { animation: fadeInUp 0.6s ease forwards; }
-        .fade-in { animation: fadeIn 0.4s ease forwards; }
-        .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(124,111,205,0.2); }
-        .prof-card { transition: all 0.2s ease; cursor: pointer; }
-        .prof-card:hover { transform: translateY(-4px) scale(1.02); }
-        .nav-item { transition: all 0.2s ease; cursor: pointer; }
-        .nav-item:hover { background: rgba(255,255,255,0.1) !important; }
-        .shimmer-text { background: linear-gradient(90deg, #fff 0%, #c4b5fd 50%, #fff 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; }
-        ::placeholder { color: rgba(255,255,255,0.5); }
-        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(124,111,205,0.3); border-radius: 3px; }
-      @media (max-width: 768px) {
-  #hamburger-btn { display: flex !important; }
-  #sidebar-overlay { display: block !important; }
-}
-@media (min-width: 769px) {
-  #hamburger-btn { display: none !important; }
-  #sidebar-overlay { display: none !important; }
-}
-        `}</style>
 
-      <div style={{ position: "relative", zIndex: 1, display: "flex", width: "100%" }}>
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
 
-        {/* Hamburger button — visible on mobile */}
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+          0%,100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+
+        @keyframes shimmer {
+          from { background-position: -200% center; }
+          to { background-position: 200% center; }
+        }
+
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes blob1 {
+          from { transform: translate(0,0) scale(1); }
+          to { transform: translate(100px,50px) scale(1.2); }
+        }
+
+        @keyframes blob2 {
+          from { transform: translate(0,0) scale(1); }
+          to { transform: translate(-80px,-60px) scale(1.1); }
+        }
+
+        @keyframes blob3 {
+          from { transform: translate(0,0) scale(1); }
+          to { transform: translate(60px,-80px) scale(0.9); }
+        }
+
+        .fade-in-up {
+          animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .fade-in {
+          animation: fadeIn 0.4s ease forwards;
+        }
+
+        .hover-lift {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hover-lift:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 12px 40px rgba(124,111,205,0.2);
+        }
+
+        .prof-card {
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+
+        .prof-card:hover {
+          transform: translateY(-4px) scale(1.02);
+        }
+
+        .nav-item {
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+
+        .nav-item:hover {
+          background: rgba(255,255,255,0.1) !important;
+        }
+
+        .shimmer-text {
+          background: linear-gradient(90deg, #fff 0%, #c4b5fd 50%, #fff 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: shimmer 3s linear infinite;
+        }
+
+        ::placeholder {
+          color: rgba(255,255,255,0.5);
+        }
+
+        ::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: rgba(124,111,205,0.3);
+          border-radius: 3px;
+        }
+      `}</style>
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          display: "flex",
+          width: "100%"
+        }}
+      >
+
+        {/* Hamburger Button */}
         <button
           onClick={() => setSidebarOpen(prev => !prev)}
           style={{
-            position: "fixed", top: "16px", left: sidebarOpen ? "246px" : "16px",
-            zIndex: 200, background: "rgba(124,111,205,0.9)",
-            border: "none", borderRadius: "10px", width: "40px", height: "40px",
-            color: "white", fontSize: "18px", cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            backdropFilter: "blur(10px)", transition: "left 0.3s ease",
+            position: "fixed",
+            top: "16px",
+            left:
+              sidebarOpen && !isMobile
+                ? "246px"
+                : sidebarOpen && isMobile
+                ? "246px"
+                : "16px",
+
+            zIndex: 200,
+            background: "rgba(124,111,205,0.9)",
+            border: "none",
+            borderRadius: "10px",
+            width: "40px",
+            height: "40px",
+            color: "white",
+            fontSize: "18px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backdropFilter: "blur(10px)",
+            transition: "left 0.3s ease",
             boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
           }}
-          id="hamburger-btn"
         >
           {sidebarOpen ? "✕" : "☰"}
         </button>
 
-        {/* Overlay — closes sidebar on mobile when clicking outside */}
-        {sidebarOpen && (
+        {/* Mobile overlay */}
+        {sidebarOpen && isMobile && (
           <div
             onClick={() => setSidebarOpen(false)}
-            id="sidebar-overlay"
             style={{
-              display: "none", position: "fixed", inset: 0,
-              background: "rgba(0,0,0,0.5)", zIndex: 99
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.5)",
+              zIndex: 99
             }}
           />
         )}
 
-        <Sidebar
-          page={page}
-          setPage={handleNavClick}
-          userName={userName}
-          profession={profession}
-          isOpen={sidebarOpen}
-        />
-<div style={{
-  flex: 1, padding: "24px", overflowY: "auto",
-  marginLeft: "0px",
-  width: "100%"
-}}>
-        
-          {page === "dashboard" && <DashboardPage skills={skills} jobs={jobs} insights={insights} userName={userName} profession={profession} />}
-          {page === "jobs" && <JobsPage jobs={jobs} />}
-          {page === "resume" && <ResumePage userName={userName} profession={profession} />}
-          {page === "learn" && <LearnPage skills={skills} />}
-          {page === "interview" && <InterviewPage skills={skills} userName={userName} />}
-          {page === "roadmap" && <RoadmapPage skills={skills} profession={profession} />}
+        {/* Sidebar wrapper */}
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            zIndex: 100,
+            transition: "transform 0.3s ease",
+
+            transform:
+              isMobile
+                ? (sidebarOpen ? "translateX(0)" : "translateX(-100%)")
+                : (sidebarOpen ? "translateX(0)" : "translateX(-230px)")
+          }}
+        >
+          <Sidebar
+            page={page}
+            setPage={handleNavClick}
+            userName={userName}
+            profession={profession}
+            isOpen={true}
+          />
+        </div>
+
+        {/* Main content */}
+        <div
+          style={{
+            flex: 1,
+            padding: "24px",
+            overflowY: "auto",
+            width: "100%",
+
+            marginLeft:
+              isMobile
+                ? "0"
+                : (sidebarOpen ? "230px" : "0"),
+
+            transition: "margin-left 0.3s ease"
+          }}
+        >
+          {page === "dashboard" && (
+            <DashboardPage
+              skills={skills}
+              jobs={jobs}
+              insights={insights}
+              userName={userName}
+              profession={profession}
+            />
+          )}
+
+          {page === "jobs" && (
+            <JobsPage jobs={jobs} />
+          )}
+
+          {page === "resume" && (
+            <ResumePage
+              userName={userName}
+              profession={profession}
+            />
+          )}
+
+          {page === "learn" && (
+            <LearnPage skills={skills} />
+          )}
+
+          {page === "interview" && (
+            <InterviewPage
+              skills={skills}
+              userName={userName}
+            />
+          )}
+
+          {page === "roadmap" && (
+            <RoadmapPage
+              skills={skills}
+              profession={profession}
+            />
+          )}
         </div>
       </div>
     </div>

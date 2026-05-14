@@ -1431,10 +1431,10 @@ export default function App() {
             overflowY: "auto",
             width: "100%",
 
-            marginLeft:
-              isMobile
-                ? "0"
-                : (sidebarOpen ? "230px" : "0"),
+          marginLeft:
+  isMobile
+    ? "0"
+    : (sidebarOpen ? "260px" : "24px"),
 
             transition: "margin-left 0.3s ease"
           }}

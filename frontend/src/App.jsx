@@ -1358,13 +1358,13 @@ export default function App() {
           onClick={() => setSidebarOpen(prev => !prev)}
           style={{
             position: "fixed",
-            top: "16px",
+            top: "20px",
             left:
-              sidebarOpen && !isMobile
-                ? "246px"
-                : sidebarOpen && isMobile
-                ? "246px"
-                : "16px",
+  sidebarOpen && !isMobile
+    ? "250px"
+    : sidebarOpen && isMobile
+    ? "246px"
+    : "20px",
 
             zIndex: 200,
             background: "rgba(124,111,205,0.9)",

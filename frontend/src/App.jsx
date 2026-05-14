@@ -297,7 +297,7 @@ function Sidebar({ page, setPage, userName, profession, isOpen, setSidebarOpen }
       padding: "24px 16px",
       display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0,
       transition: "transform 0.3s ease",
-      transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+      
       position: "fixed", top: 0, left: 0, height: "100vh",
       zIndex: 100, overflowY: "auto"
     }}>

@@ -333,7 +333,9 @@ function Sidebar({ page, setPage, userName, profession, isOpen }) {
         <div
           key={item.id}
           className="nav-item"
-          onClick={() => setPage(item.id)}
+          onClick={() => {
+  setPage(item.id);
+}}
           style={{
             display: "flex", alignItems: "center", gap: "12px",
             padding: "10px 12px", borderRadius: "10px",
@@ -1131,13 +1133,13 @@ export default function App() {
 
   // Navigation handling
   const handleNavClick = (id) => {
-    setPage(id);
+  setPage(id);
 
-    // auto close only on mobile
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  };
+  // close sidebar on mobile
+  if (window.innerWidth <= 768) {
+    setSidebarOpen(false);
+  }
+};
 
   if (!onboarded) {
     return (

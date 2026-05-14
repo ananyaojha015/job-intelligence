@@ -1054,6 +1054,7 @@ export default function App() {
   const [jobs, setJobs] = useState([]);
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (!onboarded) return;
@@ -1118,7 +1119,7 @@ export default function App() {
     );
   }
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
 
   const handleNavClick = (id) => {
     if (page === id) {

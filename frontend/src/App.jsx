@@ -6,7 +6,7 @@ import {
   PolarGrid, PolarAngleAxis, Radar
 } from "recharts";
 
-const API = "https://jobiq-backend.onrender.com";
+const API = "https://jobiq-backend.onrender.com/api";
 
 const PROFESSIONS = [
   { id: "software-development", label: "Software Development", icon: "💻" },

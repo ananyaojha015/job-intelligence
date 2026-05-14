@@ -278,7 +278,7 @@ function SplashScreen({ onComplete }) {
 }
 
 // ── Sidebar ────────────────────────────────────
-function Sidebar({ page, setPage, userName, profession }) {
+function Sidebar({ page, setPage, userName, profession, isOpen }) {
   const items = [
     { id: "dashboard", icon: "⊞", label: "Dashboard" },
     { id: "jobs", icon: "💼", label: "Jobs" },
@@ -296,7 +296,11 @@ function Sidebar({ page, setPage, userName, profession }) {
       borderRight: "1px solid rgba(255,255,255,0.1)",
       padding: "24px 16px",
       display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0,
-      animation: "slideIn 0.5s ease forwards"
+      animation: "slideIn 0.5s ease forwards",
+      transition: "transform 0.3s ease",
+      transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+      position: "fixed", top: 0, left: 0, height: "100vh",
+      zIndex: 100,
     }}>
       {/* Logo */}
       <div style={{ marginBottom: "32px", paddingLeft: "8px" }}>
@@ -512,7 +516,7 @@ function JobsPage({ jobs }) {
   return (
     <PageWrap>
       <div>
-        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: COLORS.text }}>Job Listings</h1>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: "white" }}>Job Listings</h1>
         <p style={{ color: COLORS.textLight, margin: 0, fontSize: "14px" }}>{filtered.length + " jobs found"}</p>
       </div>
 
@@ -623,7 +627,7 @@ function ResumePage({ userName, profession }) {
   return (
     <PageWrap>
       <div>
-        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: COLORS.text }}>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: "white" }}>
           AI Resume Analyzer
         </h1>
         <p style={{ color: COLORS.textLight, margin: 0, fontSize: "14px" }}>
@@ -796,7 +800,7 @@ function LearnPage({ skills }) {
   return (
     <PageWrap>
       <div>
-        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: COLORS.text }}>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: "white" }}>
           Learning Resources
         </h1>
         <p style={{ color: COLORS.textLight, margin: 0, fontSize: "14px" }}>
@@ -877,7 +881,7 @@ function InterviewPage({ skills, userName }) {
   return (
     <PageWrap>
       <div>
-        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: COLORS.text }}>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: "white" }}>
           Interview Prep
         </h1>
         <p style={{ color: COLORS.textLight, margin: 0, fontSize: "14px" }}>
@@ -982,7 +986,7 @@ function RoadmapPage({ skills, profession }) {
   return (
     <PageWrap>
       <div>
-        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: COLORS.text }}>
+        <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: "white" }}>
           Skill Roadmap
         </h1>
         <p style={{ color: COLORS.textLight, margin: 0, fontSize: "14px" }}>
@@ -1114,6 +1118,17 @@ export default function App() {
     );
   }
 
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleNavClick = (id) => {
+    if (page === id) {
+      setSidebarOpen(prev => !prev);
+    } else {
+      setPage(id);
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       <AnimatedBg />
@@ -1138,11 +1153,52 @@ export default function App() {
         .shimmer-text { background: linear-gradient(90deg, #fff 0%, #c4b5fd 50%, #fff 100%); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; }
         ::placeholder { color: rgba(255,255,255,0.5); }
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(124,111,205,0.3); border-radius: 3px; }
-      `}</style>
+      @media (max-width: 768px) {
+          #hamburger-btn { display: flex !important; }
+          #sidebar-overlay { display: block !important; }
+        }
+        `}</style>
 
       <div style={{ position: "relative", zIndex: 1, display: "flex", width: "100%" }}>
-        <Sidebar page={page} setPage={setPage} userName={userName} profession={profession} />
-        <div style={{ flex: 1, padding: "32px", overflowY: "auto", maxWidth: "960px" }}>
+
+        {/* Hamburger button — visible on mobile */}
+        <button
+          onClick={() => setSidebarOpen(prev => !prev)}
+          style={{
+            position: "fixed", top: "16px", left: sidebarOpen ? "240px" : "16px",
+            zIndex: 200, background: "rgba(124,111,205,0.9)",
+            border: "none", borderRadius: "10px", width: "40px", height: "40px",
+            color: "white", fontSize: "18px", cursor: "pointer",
+            display: "none", alignItems: "center", justifyContent: "center",
+            backdropFilter: "blur(10px)", transition: "left 0.3s ease",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
+          }}
+          id="hamburger-btn"
+        >
+          {sidebarOpen ? "✕" : "☰"}
+        </button>
+
+        {/* Overlay — closes sidebar on mobile when clicking outside */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            id="sidebar-overlay"
+            style={{
+              display: "none", position: "fixed", inset: 0,
+              background: "rgba(0,0,0,0.5)", zIndex: 99
+            }}
+          />
+        )}
+
+        <Sidebar
+          page={page}
+          setPage={handleNavClick}
+          userName={userName}
+          profession={profession}
+          isOpen={sidebarOpen}
+        />
+<div style={{ flex: 1, padding: "32px", overflowY: "auto", maxWidth: "960px", marginLeft: "230px" }}>
+        
           {page === "dashboard" && <DashboardPage skills={skills} jobs={jobs} insights={insights} userName={userName} profession={profession} />}
           {page === "jobs" && <JobsPage jobs={jobs} />}
           {page === "resume" && <ResumePage userName={userName} profession={profession} />}

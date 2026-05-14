@@ -1425,7 +1425,7 @@ export default function App() {
   setPage={handleNavClick}
   userName={userName}
   profession={profession}
-  isOpen={true}
+  isOpen={sidebarOpen}
   setSidebarOpen={setSidebarOpen}
 />
         </div>

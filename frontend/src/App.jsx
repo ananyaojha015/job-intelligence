@@ -1407,19 +1407,20 @@ export default function App() {
 
         {/* Sidebar wrapper */}
         <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            zIndex: 100,
-            transition: "transform 0.3s ease",
+  style={{
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "260px",
+    height: "100vh",
+    zIndex: 100,
+    transition: "transform 0.3s ease",
 
-            transform:
-              isMobile
-                ? (sidebarOpen ? "translateX(0)" : "translateX(-100%)")
-                : (sidebarOpen ? "translateX(0)" : "translateX(-230px)")
-          }}
-        >
+    transform: sidebarOpen
+      ? "translateX(0)"
+      : "translateX(-100%)"
+  }}
+>
          <Sidebar
   page={page}
   setPage={handleNavClick}

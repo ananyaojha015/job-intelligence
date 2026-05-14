@@ -291,16 +291,15 @@ function Sidebar({ page, setPage, userName, profession, isOpen }) {
   return (
     <div style={{
       width: "230px", minHeight: "100vh",
-      background: "rgba(255,255,255,0.08)",
+      background: "rgba(15,12,41,0.95)",
       backdropFilter: "blur(20px)",
       borderRight: "1px solid rgba(255,255,255,0.1)",
       padding: "24px 16px",
       display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0,
-      animation: "slideIn 0.5s ease forwards",
       transition: "transform 0.3s ease",
       transform: isOpen ? "translateX(0)" : "translateX(-100%)",
       position: "fixed", top: 0, left: 0, height: "100vh",
-      zIndex: 100,
+      zIndex: 100, overflowY: "auto"
     }}>
       {/* Logo */}
       <div style={{ marginBottom: "32px", paddingLeft: "8px" }}>
@@ -1054,7 +1053,7 @@ export default function App() {
   const [jobs, setJobs] = useState([]);
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
   useEffect(() => {
     if (!onboarded) return;
@@ -1155,9 +1154,13 @@ export default function App() {
         ::placeholder { color: rgba(255,255,255,0.5); }
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(124,111,205,0.3); border-radius: 3px; }
       @media (max-width: 768px) {
-          #hamburger-btn { display: flex !important; }
-          #sidebar-overlay { display: block !important; }
-        }
+  #hamburger-btn { display: flex !important; }
+  #sidebar-overlay { display: block !important; }
+}
+@media (min-width: 769px) {
+  #hamburger-btn { display: none !important; }
+  #sidebar-overlay { display: none !important; }
+}
         `}</style>
 
       <div style={{ position: "relative", zIndex: 1, display: "flex", width: "100%" }}>
@@ -1166,11 +1169,11 @@ export default function App() {
         <button
           onClick={() => setSidebarOpen(prev => !prev)}
           style={{
-            position: "fixed", top: "16px", left: sidebarOpen ? "240px" : "16px",
+            position: "fixed", top: "16px", left: sidebarOpen ? "246px" : "16px",
             zIndex: 200, background: "rgba(124,111,205,0.9)",
             border: "none", borderRadius: "10px", width: "40px", height: "40px",
             color: "white", fontSize: "18px", cursor: "pointer",
-            display: "none", alignItems: "center", justifyContent: "center",
+            display: "flex", alignItems: "center", justifyContent: "center",
             backdropFilter: "blur(10px)", transition: "left 0.3s ease",
             boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
           }}
@@ -1198,7 +1201,11 @@ export default function App() {
           profession={profession}
           isOpen={sidebarOpen}
         />
-<div style={{ flex: 1, padding: "32px", overflowY: "auto", maxWidth: "960px", marginLeft: "230px" }}>
+<div style={{
+  flex: 1, padding: "24px", overflowY: "auto",
+  marginLeft: "0px",
+  width: "100%"
+}}>
         
           {page === "dashboard" && <DashboardPage skills={skills} jobs={jobs} insights={insights} userName={userName} profession={profession} />}
           {page === "jobs" && <JobsPage jobs={jobs} />}

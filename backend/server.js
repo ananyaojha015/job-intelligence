@@ -11,7 +11,7 @@ const resumeRouter = require('./routes/resume');
 // additional routes (from HEAD branch)
 const professionRouter = require('./routes/profession');
 const interviewRouter = require('./routes/interview');
-const uploadRouter = require('./routes/upload');
+
 
 const app = express();
 
@@ -32,7 +32,7 @@ app.use('/api/resume', resumeRouter);
 // extra features routes
 app.use('/api/profession', professionRouter);
 app.use('/api/interview', interviewRouter);
-app.use('/api/upload', uploadRouter);
+
 
 // health check route
 app.get('/', (req, res) => {

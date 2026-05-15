@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -586,32 +586,6 @@ function ResumePage({ userName, profession }) {
   const [resumeText, setResumeText] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [fileName, setFileName] = useState("");
-  const fileRef = useRef(null);
-
-  const handleFileUpload = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  setFileName(file.name);
-  setUploading(true);
-  try {
-    const formData = new FormData();
-    formData.append('resume', file);
-    const res = await axios.post(API + "/upload/resume", formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    setResumeText(res.data.text);
-  } catch (err) {
-    const msg = err.response && err.response.data && err.response.data.error
-      ? err.response.data.error
-      : 'Failed to parse file.';
-    setFileName('');
-    alert(msg + ' Please paste your resume text in the box below.');
-  } finally {
-    setUploading(false);
-  }
-};
 
   const analyze = async () => {
     if (!resumeText.trim()) return;
@@ -635,86 +609,48 @@ function ResumePage({ userName, profession }) {
         <h1 style={{ fontSize: "26px", fontWeight: "700", margin: "0 0 4px 0", color: "white" }}>
           AI Resume Analyzer
         </h1>
-        <p style={{ color: COLORS.textLight, margin: 0, fontSize: "14px" }}>
-          Upload your resume or paste text for personalized career analysis
+        <p style={{ color: "rgba(255,255,255,0.6)", margin: 0, fontSize: "14px" }}>
+          Paste your resume text for personalized AI career analysis
         </p>
       </div>
 
       <GCard>
-        {/* Upload button */}
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".pdf,.txt,.doc,.docx"
-          onChange={handleFileUpload}
-          style={{ display: "none" }}
-        />
-        <div
-          onClick={() => fileRef.current.click()}
-          style={{
-            border: "2px dashed rgba(124,111,205,0.3)",
-            borderRadius: "12px", padding: "28px",
-            textAlign: "center", cursor: "pointer",
-            background: "rgba(124,111,205,0.03)",
-            marginBottom: "16px",
-            transition: "all 0.2s ease"
-          }}
-        >
-          {uploading ? (
-            <div style={{ color: COLORS.primary, fontSize: "14px" }}>Parsing your resume...</div>
-          ) : fileName ? (
-            <div>
-              <div style={{ fontSize: "28px", marginBottom: "8px" }}>✅</div>
-              <div style={{ color: COLORS.primary, fontSize: "14px", fontWeight: "600" }}>{fileName}</div>
-              <div style={{ color: COLORS.textLight, fontSize: "12px", marginTop: "4px" }}>Click to upload a different file</div>
-            </div>
-          ) : (
-            <div>
-              <div style={{ fontSize: "36px", marginBottom: "10px" }}>📄</div>
-              <div style={{ color: COLORS.primary, fontSize: "14px", fontWeight: "600" }}>
-                Click to upload resume
-              </div>
-              <div style={{ color: COLORS.textLight, fontSize: "12px", marginTop: "6px" }}>
-                PDF, TXT supported (max 5MB)
-              </div>
-            </div>
-          )}
+        <div style={{ fontSize: "13px", color: COLORS.textLight, marginBottom: "10px", fontWeight: "500" }}>
+          Paste your resume text below:
         </div>
-
-        <div style={{ textAlign: "center", color: COLORS.textLight, fontSize: "13px", marginBottom: "16px" }}>
-          — or paste your resume text —
-        </div>
-
         <textarea
           value={resumeText}
           onChange={e => setResumeText(e.target.value)}
-          placeholder="Paste your resume text here..."
+          placeholder="Copy your entire resume and paste it here — work experience, skills, education, projects..."
           style={{
-            width: "100%", height: "160px", padding: "14px",
+            width: "100%", height: "220px", padding: "14px",
             border: "1px solid rgba(124,111,205,0.2)", borderRadius: "12px",
             fontSize: "13px", resize: "vertical", fontFamily: "sans-serif",
             boxSizing: "border-box", outline: "none",
-            background: "rgba(124,111,205,0.03)", lineHeight: "1.6"
+            background: "rgba(124,111,205,0.03)", lineHeight: "1.6",
+            color: COLORS.text
           }}
         />
-
-        <button
-          onClick={analyze}
-          disabled={loading || !resumeText.trim()}
-          style={{
-            marginTop: "14px", padding: "12px 32px",
-            background: loading || !resumeText.trim()
-              ? "#ccc"
-              : "linear-gradient(135deg, #7C6FCD, #a78bfa)",
-            color: "white", border: "none", borderRadius: "12px",
-            fontSize: "15px", fontWeight: "600",
-            cursor: loading || !resumeText.trim() ? "not-allowed" : "pointer",
-            boxShadow: loading ? "none" : "0 4px 20px rgba(124,111,205,0.35)",
-            transition: "all 0.2s ease"
-          }}
-        >
-          {loading ? "Analyzing with AI..." : "Analyze My Resume"}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "14px" }}>
+          <div style={{ fontSize: "12px", color: COLORS.textLight }}>
+            {resumeText.length > 0 ? resumeText.length + " characters" : "Tip: more detail = better analysis"}
+          </div>
+          <button
+            onClick={analyze}
+            disabled={loading || !resumeText.trim()}
+            style={{
+              padding: "12px 32px",
+              background: loading || !resumeText.trim() ? "#ccc" : "linear-gradient(135deg, #7C6FCD, #a78bfa)",
+              color: "white", border: "none", borderRadius: "12px",
+              fontSize: "15px", fontWeight: "600",
+              cursor: loading || !resumeText.trim() ? "not-allowed" : "pointer",
+              boxShadow: loading ? "none" : "0 4px 20px rgba(124,111,205,0.35)",
+              transition: "all 0.2s ease"
+            }}
+          >
+            {loading ? "Analyzing with AI..." : "Analyze My Resume"}
+          </button>
+        </div>
       </GCard>
 
       {result && (
@@ -743,7 +679,7 @@ function ResumePage({ userName, profession }) {
                 {result.user_skills.length + " skills detected out of " + result.total_market_skills + " tracked"}
               </div>
               <div style={{ marginTop: "12px", height: "6px", background: "rgba(255,255,255,0.3)", borderRadius: "3px", width: "200px" }}>
-                <div style={{ height: "100%", width: result.match_score + "%", background: "white", borderRadius: "3px" }} />
+                <div style={{ height: "100%", width: result.match_score + "%", background: "white", borderRadius: "3px", transition: "width 1s ease" }} />
               </div>
             </div>
           </div>
@@ -755,7 +691,9 @@ function ResumePage({ userName, profession }) {
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                 {result.strong_skills.length === 0 && (
-                  <span style={{ fontSize: "13px", color: COLORS.textLight }}>No exact market matches found</span>
+                  <span style={{ fontSize: "13px", color: COLORS.textLight }}>
+                    No exact market matches — try adding more technical details
+                  </span>
                 )}
                 {result.strong_skills.map((s, i) => (
                   <span key={i} style={{ background: "rgba(109,191,158,0.15)", color: COLORS.success, padding: "5px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "500" }}>
